@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nfl</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)), 
+                        url('https://assets.ticketsberry.com/events/52d44f0f-0229-4253-9581-2b3773f48318/e6cc99f2-3df7-4a27-abfe-f760f96f2930/music-awards-verona-tickets.webp') no-repeat center center;
+            background-size: cover;
+            background-attachment: scroll;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 10px;
+        }
+
+        .main-wrapper {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* Top Ad Section */
+        .ad-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 60px;
+        }
+
+        /* Event Name */
+        .event-title {
+            font-size: 26px;
+            font-weight: bold;
+            text-align: center;
+            letter-spacing: 1px;
+            color: #f8fafc;
+            text-transform: uppercase;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* Thumbnail & Video Player Container (16:9 Aspect Ratio) */
+        .thumbnail-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .thumbnail-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Glowing Play Button */
+        .play-btn-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 0, 0, 0.9);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 25px rgba(255, 0, 0, 0.8), 0 0 50px rgba(255, 0, 0, 0.5);
+            animation: glowing 1.5s infinite alternate;
+            transition: transform 0.2s ease;
+            z-index: 5;
+        }
+
+        .play-btn-glow::after {
+            content: "";
+            position: absolute;
+            left: 32px;
+            width: 0;
+            height: 0;
+            border-top: 16px solid transparent;
+            border-bottom: 16px solid transparent;
+            border-left: 26px solid #ffffff;
+        }
+
+        .thumbnail-container:hover .play-btn-glow {
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        @keyframes glowing {
+            0% {
+                box-shadow: 0 0 15px rgba(255, 0, 0, 0.6), 0 0 30px rgba(255, 0, 0, 0.4);
+            }
+            100% {
+                box-shadow: 0 0 30px rgba(255, 0, 0, 1), 0 0 60px rgba(255, 0, 0, 0.8);
+            }
+        }
+
+        /* Fake Video Player Control Bar */
+        .video-controls-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 45px;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            z-index: 6;
+        }
+
+        .controls-left, .controls-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .control-icon {
+            width: 16px;
+            height: 16px;
+            fill: #fff;
+            cursor: pointer;
+        }
+
+        .time-display {
+            font-size: 12px;
+            color: #ffffff;
+            font-family: monospace;
+            letter-spacing: 0.5px;
+        }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            font-weight: bold;
+            color: #fff;
+            letter-spacing: 0.5px;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #ff0000;
+            border-radius: 50%;
+            animation: livePulse 1s infinite alternate;
+        }
+
+        @keyframes livePulse {
+            0% { opacity: 0.3; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1.1); }
+        }
+
+        /* Buffering / Loading Overlay */
+        .buffering-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .buffering-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.2);
+            border-top: 5px solid #ff0000;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .buffering-text {
+            font-size: 14px;
+            color: #cbd5e1;
+            letter-spacing: 1px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Footer / Bottom spacing */
+        .footer-note {
+            font-size: 11px;
+            color: #64748b;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .event-title {
+                font-size: 20px;
+            }
+            .play-btn-glow {
+                width: 60px;
+                height: 60px;
+            }
+            .play-btn-glow::after {
+                left: 24px;
+                border-top: 12px solid transparent;
+                border-bottom: 12px solid transparent;
+                border-left: 20px solid #ffffff;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-wrapper">
+        <!-- ১. উপরে অ্যাড সেকশন -->
+        <div class="ad-container">
+            <script>
+              atOptions = {
+                'key' : 'a16aeceaa2327a902bddb83ea042b005',
+                'format' : 'iframe',
+                'height' : 50,
+                'width' : 320,
+                'params' : {}
+              };
+            </script>
+            <script src="https://herbalraising.com/a16aeceaa2327a902bddb83ea042b005/invoke.js"></script>
+        </div>
+
+        <!-- ২. ইভেন্টের নাম -->
+        <div class="event-title">Stellar Gospel Music Awards 2026 Live Stream</div>
+        <div class="ad-container">
+            <script>
+              atOptions = {
+                'key' : '6bb2dcd13d2539b236311b2ce7601ecf',
+                'format' : 'iframe',
+                'height' : 50,
+                'width' : 320,
+                'params' : {}
+              };
+            </script>
+            <script src="https://www.highperformanceformat.com/6bb2dcd13d2539b236311b2ce7601ecf/invoke.js"></script>
+        </div>
+        
+        <!-- ৩. ১৬:৯ থাম্বনেইল, গ্লোয়িং প্লে বাটন এবং রিয়েল ভিডিও কন্ট্রোল বার -->
+        <div class="thumbnail-container" onclick="startBufferingAndRedirect()">
+            <!-- আপনার থাম্বনেইল ইমেজ লিংক -->
+            <img src="https://www.thestellarawards.com/2026/2026-header.jpg" alt="Live Event Thumbnail">
+            
+            <!-- গ্লোয়িং প্লে বাটন -->
+            <div class="play-btn-glow"></div>
+
+            <!-- ভিডিও প্লেয়ারের নিচের কন্ট্রোল বার -->
+            <div class="video-controls-bar">
+                <div class="controls-left">
+                    <!-- Play Icon SVG -->
+                    <svg class="control-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    <!-- Volume Icon SVG -->
+                    <svg class="control-icon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+                    <span id="liveTimer" class="time-display">00:05:12</span>
+                </div>
+                <div class="controls-right">
+                    <div class="live-indicator">
+                        <div class="live-dot"></div>
+                        <span>LIVE</span>
+                    </div>
+                    <!-- Fullscreen Icon SVG -->
+                    <svg class="control-icon" viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+                </div>
+            </div>
+
+            <!-- ব্যারিং/লোডিং ওভারলে -->
+            <div id="bufferingOverlay" class="buffering-overlay">
+                <div class="spinner"></div>
+                <div class="buffering-text">Connecting to Live Stream...</div>
+            </div>
+        </div>
+
+        <!-- ৪. থাম্বনেইলের নিচে প্রথম অ্যাড -->
+        <div class="ad-container">
+            <script>
+              atOptions = {
+                'key' : '62f4acd07b39e7a254e8ab2083e1f2c4',
+                'format' : 'iframe',
+                'height' : 250,
+                'width' : 300,
+                'params' : {}
+              };
+            </script>
+            <script src="https://herbalraising.com/62f4acd07b39e7a254e8ab2083e1f2c4/invoke.js"></script>
+        </div>
+
+        <!-- ৫. থাম্বনেইলের নিচে দ্বিতীয় অ্যাড -->
+        <div class="ad-container">
+            <script>
+              atOptions = {
+                'key' : '5a96fe4cb6b1811be3561476dc12a09d',
+                'format' : 'iframe',
+                'height' : 250,
+                'width' : 300,
+                'params' : {}
+              };
+            </script>
+            <script src="https://www.highperformanceformat.com/5a96fe4cb6b1811be3561476dc12a09d/invoke.js"></script>
+        </div>
+    </div>
+    
+    <div class="footer-note">
+        Secure HD Streaming Player © 2026
+    </div>
+
+    <!-- ৬. ৩ সেকেন্ড ব্যারিং ও আপনার লিংকে রিডাইরেক্ট করার জাভাস্ক্রিপ্ট -->
+    <script>
+        // লাইভ টাইমার রানিং করার স্ক্রিপ্ট
+        let seconds = 312; // 00:05:12 থেকে শুরু হবে
+        setInterval(() => {
+            seconds++;
+            let hrs = String(Math.floor(seconds / 3600)).padStart(2, '0');
+            let mins = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+            let secs = String(seconds % 60).padStart(2, '0');
+            document.getElementById('liveTimer').innerText = `${hrs}:${mins}:${secs}`;
+        }, 1000);
+
+        function startBufferingAndRedirect() {
+            const overlay = document.getElementById('bufferingOverlay');
+            
+            // ব্যারিং অ্যানিমেশন চালু করা
+            overlay.classList.add('active');
+
+            // ৩ সেকেন্ড পর আপনার নতুন অফার লিংকে রিডাইরেক্ট করবে
+            setTimeout(function() {
+                window.location.href = "https://lofij.com/af?o=20cce204616fbce083aeac2f892c6024:4b695999b767432ebebd6403a96d657e&subid=naim&kw=Stellar Gospel Music Awards 2026 Live Stream";
+            }, 3000);
+        }
+    </script>
+
+</body>
+</html>
+
+<!-- Histats.com  START  (aync)-->
+<script type="text/javascript">var _Hasync= _Hasync|| [];
+_Hasync.push(['Histats.start', '1,4867514,4,511,95,18,00000000']);
+_Hasync.push(['Histats.fasi', '1']);
+_Hasync.push(['Histats.track_hits', '']);
+(function() {
+var hs = document.createElement('script'); hs.type = 'text/javascript'; hs.async = true;
+hs.src = ('//s10.histats.com/js15_as.js');
+(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(hs);
+})();</script>
+<noscript><a href="/" target="_blank"><img  src="//sstatic1.histats.com/0.gif?4867514&101" alt="free geoip" border="0"></a></noscript>
+<!-- Histats.com  END  -->
